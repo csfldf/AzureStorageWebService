@@ -9,6 +9,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage.Auth;
 using System.Text;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureStorageWebService.Controllers
 {

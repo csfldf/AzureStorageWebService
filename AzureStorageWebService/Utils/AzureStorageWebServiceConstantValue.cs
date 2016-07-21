@@ -9,5 +9,6 @@ namespace AzureStorageWebService.Utils
     {
         public const int SleepTime = 200;
         public const char pathSplitor = '/';
+        public const string UnAuthorizedMessage = "Unauthorized operation, accountName or sasToken may be error.";
     }
 }

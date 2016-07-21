@@ -8,13 +8,16 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage.Auth;
 using AzureStorageWebService.Utils;
 using System.Net;
+using System.Net.Http;
 
 namespace AzureStorageWebService.Controllers
 {
     public class TableServiceController : ApiController
     {
+        public static string TableOperationErrorMessage = "Operation failed, please check your table name.";
+
         // GET: TableService
-        public IEnumerable<String> GetAllTables(string accountName, string sasToken)
+        public HttpResponseMessage GetAllTables(string accountName, string sasToken)
         {
             try
             {
@@ -26,42 +29,43 @@ namespace AzureStorageWebService.Controllers
                 {
                     tableNames.Add(table.Name);
                 }
-
-                return tableNames;
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, tableNames);
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, TableOperationErrorMessage);
             }
         }
 
         //回头要改为post
-        [HttpGet]
-        public bool CreateTable(string accountName, string sasToken, string createTableName)
+        [HttpPost]
+        public HttpResponseMessage CreateTable(string accountName, string sasToken, string createTableName)
         {
             try
             {
                 AzureTableStorageAdapter tableStorageAdapter = new AzureTableStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return tableStorageAdapter.CreateTable(createTableName);
+                var opResult = tableStorageAdapter.CreateTable(createTableName);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, TableOperationErrorMessage);
             }
         }
 
         //回头改为HttpDelete
-        [HttpGet]
-        public bool DeleteTable(string accountName, string sasToken, string deleteTableName)
+        [HttpDelete]
+        public HttpResponseMessage DeleteTable(string accountName, string sasToken, string deleteTableName)
         {
             try
             {
                 AzureTableStorageAdapter tableStorageAdapter= new AzureTableStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return tableStorageAdapter.DeleteTable(deleteTableName);
+                var opResult = tableStorageAdapter.DeleteTable(deleteTableName);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, TableOperationErrorMessage);
             }
         }
     }

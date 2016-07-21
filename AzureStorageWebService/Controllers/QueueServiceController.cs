@@ -12,7 +12,9 @@ namespace AzureStorageWebService.Controllers
 {
     public class QueueServiceController : ApiController
     {
-        public IEnumerable<string> GetAllQueues(string accountName, string sasToken)
+        public static string QueueOperationErrorMessage = "Operation failed, please check your queue name.";
+
+        public HttpResponseMessage GetAllQueues(string accountName, string sasToken)
         {
             try
             {
@@ -25,75 +27,75 @@ namespace AzureStorageWebService.Controllers
                     queueNames.Add(queue.Name);
                 }
 
-                return queueNames;
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, queues);
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, QueueOperationErrorMessage);
             }
         }
 
-        public IEnumerable<CloudQueueMessage> GetMessagesInSpecificQueue(string accountName, string sasToken, string queueName, int messageCount)
+        public HttpResponseMessage GetMessagesInSpecificQueue(string accountName, string sasToken, string queueName, int messageCount)
         {
             try
             {
                 if (messageCount == 0)
                 {
-                    return new List<CloudQueueMessage>();
+                    return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, new List<CloudQueueMessage>());
                 }
 
                 AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return queueStorageAdapter.GetMessages(queueName, messageCount);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, queueStorageAdapter.GetMessages(queueName, messageCount));
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName, sasToken or queueName error", "accountName, sasToken or queueName error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, QueueOperationErrorMessage);
             }
         }
 
 
         //回头要改成Post
-        //[HttpGet]
-        //public bool CreateQueue(string accountName, string sasToken, string queueName)
-        //{
-        //    try
-        //    {
-        //        AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-        //        return queueStorageAdapter.CreateQueue(queueName);
-        //    }
-        //    catch (StorageException)
-        //    {
-        //        throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
-        //    }
-        //}
-
-        //回头要改成Delete
-        //[HttpGet]
-        //public bool DeleteQueue(string accountName, string sasToken, string queueName)
-        //{
-        //    try
-        //    {
-        //        AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-        //        return queueStorageAdapter.DeleteQueue(queueName);
-        //    }
-        //    catch (StorageException)
-        //    {
-        //        throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName, sasToken or queueName error", "accountName, sasToken or queueName error");
-        //    }
-        //}
-
-        //回头要改成Post
-        [HttpGet]
-        public bool EnqueueMessage(string accountName, string sasToken, string queueName, string message)
+        [HttpPost]
+        public HttpResponseMessage CreateQueue(string accountName, string sasToken, string queueName)
         {
             try
             {
                 AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return queueStorageAdapter.EnqueueMessage(queueName, message);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, queueStorageAdapter.CreateQueue(queueName));
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName, sasToken or queueName error", "accountName, sasToken or queueName error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, QueueOperationErrorMessage);
+            }
+        }
+
+        //回头要改成Delete
+        [HttpDelete]
+        public HttpResponseMessage DeleteQueue(string accountName, string sasToken, string queueName)
+        {
+            try
+            {
+                AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, queueStorageAdapter.DeleteQueue(queueName));
+            }
+            catch (StorageException e)
+            {
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, QueueOperationErrorMessage);
+            }
+        }
+
+        //回头要改成Post
+        [HttpPost]
+        public HttpResponseMessage EnqueueMessage(string accountName, string sasToken, string queueName, string message)
+        {
+            try
+            {
+                AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, queueStorageAdapter.EnqueueMessage(queueName, message));
+            }
+            catch (StorageException e)
+            {
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, QueueOperationErrorMessage);
             }
         }
     }

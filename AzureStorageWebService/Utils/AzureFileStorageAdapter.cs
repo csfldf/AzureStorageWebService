@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using AzureStorageWebService.Exceptions;
 
 namespace AzureStorageWebService.Utils
 {
@@ -45,13 +46,13 @@ namespace AzureStorageWebService.Utils
 
                 if (!currentDirectory.Exists())
                 {
-                    throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.NotFound, "Directory Not Found", string.Format("No directory with path = {0}", absolutePath));
+                    throw new OperationFailException(string.Format("No directory with path = {0}", absolutePath));
                 }
             }
             return currentDirectory.ListFilesAndDirectories();
         }
 
-        public void DeleteFile(string fileShareName, string absolutePath)
+        public Tuple<bool, string> DeleteFile(string fileShareName, string absolutePath)
         {
             CloudFileShare cloudFileShare = cloudFileClient.GetShareReference(fileShareName);
             CloudFileDirectory currentDirectory = cloudFileShare.GetRootDirectoryReference();
@@ -66,7 +67,7 @@ namespace AzureStorageWebService.Utils
 
                     if (!targetFile.Exists())
                     {
-                        throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.NotFound, "File Not Found", string.Format("No file with path = {0}", absolutePath));
+                        return Tuple.Create<bool, string>(false, string.Format("No file with path = {0} in file share {1}", absolutePath, fileShareName));
                     }
                 }
                 else 
@@ -75,12 +76,13 @@ namespace AzureStorageWebService.Utils
 
                     if (!currentDirectory.Exists())
                     {
-                        throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.NotFound, "File Not Found", string.Format("No file with path = {0}", absolutePath));
+                        return Tuple.Create<bool, string>(false, string.Format("No file with path = {0} in file share {1}", absolutePath, fileShareName));
                     }
                 }
             }
 
             targetFile.Delete();
+            return Tuple.Create<bool, string>(true, string.Format("Delete file {0} in file share {1} successfully", absolutePath, fileShareName));
         }
 
         public Tuple<bool, string> CreateFile(string fileShareName, string absolutePath, int size)

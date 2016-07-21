@@ -28,21 +28,35 @@ namespace AzureStorageWebService.Utils
             //看看能不能ListAllPartitions
         }
 
-        public bool CreateTable(string tableName)
+        public Tuple<bool, string> CreateTable(string tableName)
         {
             CloudTable cloudTable = cloudTableClient.GetTableReference(tableName);
 
             IAsyncResult result = cloudTable.BeginCreateIfNotExists(null, null);
             AzureStorageWebServiceUtil.WaitingForAsyncResult(result);
-            return cloudTable.EndCreateIfNotExists(result);
+            if (cloudTable.EndCreateIfNotExists(result))
+            {
+                return Tuple.Create<bool, string>(true, string.Format("Create table {0} successfully", tableName));
+            }
+            else
+            {
+                return Tuple.Create<bool, string>(false, string.Format("Create table {0} unsuccessfully", tableName));
+            }
         }
 
-        public bool DeleteTable(string tableName)
+        public Tuple<bool, string> DeleteTable(string tableName)
         {
             CloudTable cloudTable = cloudTableClient.GetTableReference(tableName);
             IAsyncResult result = cloudTable.BeginDeleteIfExists(null, null);
             AzureStorageWebServiceUtil.WaitingForAsyncResult(result);
-            return cloudTable.EndDeleteIfExists(result);
+            if (cloudTable.EndDeleteIfExists(result))
+            {
+                return Tuple.Create<bool, string>(true, string.Format("Delete table {0} successfully", tableName));
+            }
+            else
+            {
+                return Tuple.Create<bool, string>(false, string.Format("Delete table {0} unsuccessfully", tableName));
+            }
         }
     }
 }

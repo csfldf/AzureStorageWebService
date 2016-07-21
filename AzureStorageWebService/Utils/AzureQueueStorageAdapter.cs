@@ -37,29 +37,66 @@ namespace AzureStorageWebService.Utils
             return cloudQueue.EndGetMessages(result);
         }
 
-        public bool DeleteQueue(string queueName)
+        public Tuple<bool, string> DeleteQueue(string queueName)
         {
-            CloudQueue cloudQueue = cloudQueueClient.GetQueueReference(queueName);
+            try
+            {
+                CloudQueue cloudQueue = cloudQueueClient.GetQueueReference(queueName);
+                IAsyncResult result = cloudQueue.BeginDeleteIfExists(null, null);
+                AzureStorageWebServiceUtil.WaitingForAsyncResult(result);
+                bool opResult = cloudQueue.EndDeleteIfExists(result);
 
-            IAsyncResult result = cloudQueue.BeginDeleteIfExists(null, null);
-            AzureStorageWebServiceUtil.WaitingForAsyncResult(result);
-            return cloudQueue.EndDeleteIfExists(result);
+                if (opResult)
+                {
+                    return Tuple.Create<bool, string>(true, "Delete queue successfully");
+                }
+                else
+                {
+                    return Tuple.Create<bool, string>(false, "Delete queue unsuccessfully");
+                }
+            }
+            catch (StorageException)
+            {
+                return Tuple.Create<bool, string>(false, "Delete queue unsuccessfully");
+            }
         }
 
-        public bool CreateQueue(string queueName)
+        public Tuple<bool, string> CreateQueue(string queueName)
         {
-            CloudQueue cloudQueue = cloudQueueClient.GetQueueReference(queueName);
+            try
+            {
+                CloudQueue cloudQueue = cloudQueueClient.GetQueueReference(queueName);
+                IAsyncResult result = cloudQueue.BeginCreateIfNotExists(null, null);
+                AzureStorageWebServiceUtil.WaitingForAsyncResult(result);
+                bool opResult = cloudQueue.EndCreateIfNotExists(result);
 
-            IAsyncResult result = cloudQueue.BeginCreateIfNotExists(null, null);
-            AzureStorageWebServiceUtil.WaitingForAsyncResult(result);
-            return cloudQueue.EndCreateIfNotExists(result);
+                if (opResult)
+                {
+                    return Tuple.Create<bool, string>(true, "Create queue successfully");
+                }
+                else
+                {
+                    return Tuple.Create<bool, string>(false, "Create queue unsuccessfully");
+                }
+            }
+            catch (StorageException)
+            {
+                return Tuple.Create<bool, string>(false, "Create queue unsuccessfully");
+            }
         }
 
-        public bool EnqueueMessage(string queueName, string message)
+        public Tuple<bool, string> EnqueueMessage(string queueName, string message)
         {
-            CloudQueue cloudQueue = cloudQueueClient.GetQueueReference(queueName);
-            cloudQueue.AddMessage(new CloudQueueMessage(message), new TimeSpan(TimeSpan.TicksPerDay));
-            return true;
+            try
+            {
+                CloudQueue cloudQueue = cloudQueueClient.GetQueueReference(queueName);
+                cloudQueue.AddMessage(new CloudQueueMessage(message), new TimeSpan(TimeSpan.TicksPerDay));
+                return Tuple.Create<bool, string>(true, string.Format("Enqueue message to queue {0} successfully", queueName));
+            }
+            catch (StorageException)
+            {
+                return Tuple.Create<bool, string>(false, "Enqueue message to queue {0} unsuccessfully");
+            }
         }
 
     }

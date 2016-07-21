@@ -8,11 +8,24 @@ using System.Net.Http;
 using System.Net;
 using System.Text;
 using AzureStorageWebService.ResponseMessage;
+using Microsoft.WindowsAzure.Storage;
 
 namespace AzureStorageWebService.Utils
 {
     public static class AzureStorageWebServiceUtil
     {
+        public static HttpResponseMessage DealWithTheStorageException(StorageException e, HttpRequestMessage req, String specificMsg)
+        {
+            if (e.RequestInformation.HttpStatusCode == Convert.ToInt32(HttpStatusCode.Forbidden))
+            {
+                return ConstructHttpResponseUsingOperationResult(req, Tuple.Create<bool, string>(false, AzureStorageWebServiceConstantValue.UnAuthorizedMessage));
+            }
+            else
+            {
+                return ConstructHttpResponseUsingOperationResult(req, Tuple.Create<bool, string>(false, specificMsg));
+            }
+        }
+
         public static void WaitingForAsyncResult(IAsyncResult result)
         {
             while (result.IsCompleted != true)
@@ -46,6 +59,10 @@ namespace AzureStorageWebService.Utils
             {
                 return request.CreateResponse(HttpStatusCode.InternalServerError, new BoolResultOpResponse(opResult.Item1, opResult.Item2));
             }
+        }
+
+        public static HttpResponseMessage ConstructHttpResponseUsingInstance<T>(HttpRequestMessage req, T obj) {
+            return req.CreateResponse(HttpStatusCode.OK, obj);
         }
     }
 }

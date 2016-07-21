@@ -8,12 +8,15 @@ using AzureStorageWebService.Utils;
 using Microsoft.WindowsAzure.Storage.File;
 using Microsoft.WindowsAzure.Storage;
 using AzureStorageWebService.ResponseMessage;
+using AzureStorageWebService.Exceptions;
 
 namespace AzureStorageWebService.Controllers
 {
     public class FileServiceController : ApiController
     {
-        public IEnumerable<string> GetAllFileShares(string accountName, string sasToken)
+        public static string FileOperationErrorMessage = "Operation failed, please check your file share and file names.";
+
+        public HttpResponseMessage GetAllFileShares(string accountName, string sasToken)
         {
             try
             {
@@ -26,41 +29,41 @@ namespace AzureStorageWebService.Controllers
                     fileSharesNames.Add(fileShare.Name);
                 }
 
-                return fileSharesNames;
-            }
-            catch (WebException e)
-            {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "---" + e.GetType() + "---" + e.InnerException.GetType());
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileSharesNames);
             }
             catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "---" + e.GetType() + "---" + e.InnerException.GetType());
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, FileOperationErrorMessage);
             }
         }
 
-        public IEnumerable<IListFileItem> GetRootDirectoryContentInFileShare(string accountName, string sasToken, string fileShareName)
+        public HttpResponseMessage GetRootDirectoryContentInFileShare(string accountName, string sasToken, string fileShareName)
         {
             try
             {
                 AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return fileStorageAdapter.ListRootDirectoryInFileShare(fileShareName);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileStorageAdapter.ListRootDirectoryInFileShare(fileShareName));
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, FileOperationErrorMessage);
             }
         }
 
-        public IEnumerable<IListFileItem> GetSpecificDirectoryContentInFileShare(string accountName, string sasToken, string fileShareName, string absolutePath)
+        public HttpResponseMessage GetSpecificDirectoryContentInFileShare(string accountName, string sasToken, string fileShareName, string absolutePath)
         {
             try
             {
                 AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return fileStorageAdapter.ListFilesAndDirectoriesInSpecificDirectory(fileShareName, absolutePath);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileStorageAdapter.ListRootDirectoryInFileShare(fileShareName));
             }
-            catch (StorageException)
+            catch (OperationCanceledException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, new BoolResultOpResponse(false, e.Message));
+            }
+            catch (StorageException e)
+            {
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, FileOperationErrorMessage);
             }
         }
 
@@ -70,12 +73,12 @@ namespace AzureStorageWebService.Controllers
             try
             {
                 AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                fileStorageAdapter.DeleteFile(fileShareName, absolutePath);
-                return Request.CreateResponse(HttpStatusCode.OK, new BoolResultOpResponse(true, string.Format("Delete file {0} in file share {1} successfully", absolutePath, fileShareName)));
+                var opResult = fileStorageAdapter.DeleteFile(fileShareName, absolutePath);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, FileOperationErrorMessage);
             }
         }
 
@@ -90,9 +93,9 @@ namespace AzureStorageWebService.Controllers
                 var opResult = fileStorageAdapter.CreateFile(fileShareName, absolutePath, size);
                 return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
             }
-            catch (StorageException)
+            catch (StorageException e)
             {
-                throw AzureStorageWebServiceUtil.ConstructHttpResponseException(HttpStatusCode.Unauthorized, "accountName or sasToken error", "accountName or sasToken error");
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, FileOperationErrorMessage);
             }
         }
     }
