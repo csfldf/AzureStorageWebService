@@ -7,6 +7,7 @@ using System.Web.Http;
 using System.Net.Http;
 using System.Net;
 using System.Text;
+using AzureStorageWebService.ResponseMessage;
 
 namespace AzureStorageWebService.Utils
 {
@@ -33,6 +34,18 @@ namespace AzureStorageWebService.Utils
         public static string DecodeParamter(string paramter)
         {
             return paramter;
+        }
+
+        public static HttpResponseMessage ConstructHttpResponseUsingOperationResult(HttpRequestMessage request, Tuple<bool, string> opResult)
+        {
+            if (opResult.Item1)
+            {
+                return request.CreateResponse(HttpStatusCode.OK, new BoolResultOpResponse(opResult.Item1, opResult.Item2));
+            }
+            else
+            {
+                return request.CreateResponse(HttpStatusCode.InternalServerError, new BoolResultOpResponse(opResult.Item1, opResult.Item2));
+            }
         }
     }
 }

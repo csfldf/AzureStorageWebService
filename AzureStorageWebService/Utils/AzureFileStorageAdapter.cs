@@ -82,5 +82,38 @@ namespace AzureStorageWebService.Utils
 
             targetFile.Delete();
         }
+
+        public Tuple<bool, string> CreateFile(string fileShareName, string absolutePath, int size)
+        {
+            CloudFileShare cloudFileShare = cloudFileClient.GetShareReference(fileShareName);
+            CloudFileDirectory currentDirectory = cloudFileShare.GetRootDirectoryReference();
+
+            string[] pathParts = absolutePath.Substring(1).Split(AzureStorageWebServiceConstantValue.pathSplitor);
+            CloudFile targetFile = null;
+            for (int i = 0; i < pathParts.Length; i++)
+            {
+                if (i == pathParts.Length - 1)
+                {
+                    targetFile = currentDirectory.GetFileReference(pathParts[i]);
+
+                    if (!targetFile.Exists())
+                    {
+                        return Tuple.Create<bool, string>(false, string.Format("No file with path = {0} in file share {1}", absolutePath, fileShareName));
+                    }
+
+                    targetFile.Create(size);
+                }
+                else
+                {
+                    currentDirectory = currentDirectory.GetDirectoryReference(pathParts[i]);
+
+                    if (!currentDirectory.Exists())
+                    {
+                        return Tuple.Create<bool, string>(false, string.Format("No file with path = {0} in file share {1}", absolutePath, fileShareName));
+                    }
+                }
+            }
+            return Tuple.Create<bool, string>(true, string.Format("Create file {0} in file share {1} successfully", absolutePath, fileShareName));
+        }
     }
 }
