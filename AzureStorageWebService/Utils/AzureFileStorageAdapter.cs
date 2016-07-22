@@ -1,12 +1,9 @@
-﻿using Microsoft.WindowsAzure.Storage;
+﻿using System;
+using System.Collections.Generic;
+using AzureStorageWebService.Exceptions;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.File;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
-using AzureStorageWebService.Exceptions;
 
 namespace AzureStorageWebService.Utils
 {

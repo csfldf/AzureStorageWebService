@@ -40,7 +40,7 @@ namespace AzureStorageWebService.Utils
             }
             else
             {
-                return Tuple.Create<bool, string>(false, string.Format("Create table {0} unsuccessfully", tableName));
+                return Tuple.Create<bool, string>(false, string.Format("Create table {0} unsuccessfully, table {0} may exist", tableName));
             }
         }
 
@@ -55,7 +55,7 @@ namespace AzureStorageWebService.Utils
             }
             else
             {
-                return Tuple.Create<bool, string>(false, string.Format("Delete table {0} unsuccessfully", tableName));
+                return Tuple.Create<bool, string>(false, string.Format("Delete table {0} unsuccessfully, please check your tableName", tableName));
             }
         }
     }
