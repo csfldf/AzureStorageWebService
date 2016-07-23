@@ -95,9 +95,9 @@ namespace AzureStorageWebService.Utils
                 {
                     targetFile = currentDirectory.GetFileReference(pathParts[i]);
 
-                    if (!targetFile.Exists())
+                    if (targetFile.Exists())
                     {
-                        return Tuple.Create<bool, string>(false, string.Format("No file with path = {0} in file share {1}", absolutePath, fileShareName));
+                        return Tuple.Create<bool, string>(false, string.Format("file with path = {0} in file share {1} exists", absolutePath, fileShareName));
                     }
 
                     targetFile.Create(size);
