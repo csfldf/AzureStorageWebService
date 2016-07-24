@@ -55,6 +55,12 @@ namespace AzureStorageWebService.Utils
             CloudFileDirectory currentDirectory = cloudFileShare.GetRootDirectoryReference();
 
             string[] pathParts = absolutePath.Substring(1).Split(AzureStorageWebServiceConstantValue.pathSplitor);
+
+            if (pathParts.Length == 0)
+            {
+                return Tuple.Create<bool, string>(false, string.Format("path = {0} is illegal", absolutePath));
+            }
+
             CloudFile targetFile = null;
             for (int i = 0; i < pathParts.Length; i++)
             {
@@ -88,6 +94,12 @@ namespace AzureStorageWebService.Utils
             CloudFileDirectory currentDirectory = cloudFileShare.GetRootDirectoryReference();
 
             string[] pathParts = absolutePath.Substring(1).Split(AzureStorageWebServiceConstantValue.pathSplitor);
+
+            if (pathParts.Length == 0)
+            {
+                return Tuple.Create<bool, string>(false, string.Format("path = {0} is illegal in file share {1}", absolutePath, fileShareName));
+            }
+
             CloudFile targetFile = null;
             for (int i = 0; i < pathParts.Length; i++)
             {
@@ -108,11 +120,50 @@ namespace AzureStorageWebService.Utils
 
                     if (!currentDirectory.Exists())
                     {
-                        return Tuple.Create<bool, string>(false, string.Format("No file with path = {0} in file share {1}", absolutePath, fileShareName));
+                        return Tuple.Create<bool, string>(false, string.Format("path = {0} is illegal in file share {1}", absolutePath, fileShareName));
                     }
                 }
             }
             return Tuple.Create<bool, string>(true, string.Format("Create file {0} in file share {1} successfully", absolutePath, fileShareName));
+        }
+
+        public Tuple<bool, string> CreateDirectory(string fileShareName, string absolutePath)
+        {
+            CloudFileShare cloudFileShare = cloudFileClient.GetShareReference(fileShareName);
+            CloudFileDirectory currentDirectory = cloudFileShare.GetRootDirectoryReference();
+
+            string[] pathParts = absolutePath.Substring(1).Split(AzureStorageWebServiceConstantValue.pathSplitor);
+
+            if (pathParts.Length == 0)
+            {
+                return Tuple.Create<bool, string>(false, string.Format("path = {0} is illegal in file share {1}", absolutePath, fileShareName));
+            }
+
+            CloudFileDirectory targetDirectory = null;
+            for (int i = 0; i < pathParts.Length; i++)
+            {
+                if (i == pathParts.Length - 1)
+                {
+                    targetDirectory = currentDirectory.GetDirectoryReference(pathParts[i]);
+
+                    if (targetDirectory.Exists())
+                    {
+                        return Tuple.Create<bool, string>(false, string.Format("Directory with path = {0} in file share {1} exists", absolutePath, fileShareName));
+                    }
+
+                    targetDirectory.Create();
+                }
+                else
+                {
+                    currentDirectory = currentDirectory.GetDirectoryReference(pathParts[i]);
+
+                    if (!currentDirectory.Exists())
+                    {
+                        return Tuple.Create<bool, string>(false, string.Format("path = {0} is illegal in file share {1}", absolutePath, fileShareName));
+                    }
+                }
+            }
+            return Tuple.Create<bool, string>(true, string.Format("Create directory {0} in file share {1} successfully", absolutePath, fileShareName));
         }
     }
 }

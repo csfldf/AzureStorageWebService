@@ -81,8 +81,7 @@ namespace AzureStorageWebService.Controllers
                 return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, FileOperationErrorMessage);
             }
         }
-
-        //回头要改成Post
+        
         [HttpPost]
         public HttpResponseMessage CreateFileInFileShare([FromBody]FileOperationParamsModel parameters)
         {
@@ -91,6 +90,22 @@ namespace AzureStorageWebService.Controllers
                 AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(parameters.AccountName, AzureStorageWebServiceUtil.DecodeParamter(parameters.SasToken));
 
                 var opResult = fileStorageAdapter.CreateFile(parameters.FileShareName, parameters.AbsolutePath, parameters.Size);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
+            }
+            catch (StorageException e)
+            {
+                return AzureStorageWebServiceUtil.DealWithTheStorageException(e, Request, FileOperationErrorMessage);
+            }
+        }
+        
+        [HttpPost]
+        public HttpResponseMessage CreateDirectoryInFileShare([FromBody]FileOperationParamsModel parameters)
+        {
+            try
+            {
+                AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(parameters.AccountName, AzureStorageWebServiceUtil.DecodeParamter(parameters.SasToken));
+
+                var opResult = fileStorageAdapter.CreateDirectory(parameters.FileShareName, parameters.AbsolutePath);
                 return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
             }
             catch (StorageException e)
