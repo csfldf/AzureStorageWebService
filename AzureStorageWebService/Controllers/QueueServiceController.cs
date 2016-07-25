@@ -70,12 +70,12 @@ namespace AzureStorageWebService.Controllers
 
         //回头要改成Delete
         [HttpDelete]
-        public HttpResponseMessage DeleteQueue([FromBody]QueueOperationParamsModel parameters)
+        public HttpResponseMessage DeleteQueue(string accountName, string sasToken, string queueName)
         {
             try
             {
-                AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(parameters.AccountName, AzureStorageWebServiceUtil.DecodeParamter(parameters.SasToken));
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, queueStorageAdapter.DeleteQueue(parameters.QueueName));
+                AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, queueStorageAdapter.DeleteQueue(queueName));
             }
             catch (StorageException e)
             {

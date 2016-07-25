@@ -68,12 +68,12 @@ namespace AzureStorageWebService.Controllers
         }
 
         [HttpDelete]
-        public HttpResponseMessage DeleteFileInFileShare([FromBody]FileOperationParamsModel parameters)
+        public HttpResponseMessage DeleteFileInFileShare(string accountName, string sasToken, string fileShareName, string absolutePath)
         {
             try
             {
-                AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(parameters.AccountName, AzureStorageWebServiceUtil.DecodeParamter(parameters.SasToken));
-                var opResult = fileStorageAdapter.DeleteFile(parameters.FileShareName, parameters.AbsolutePath);
+                AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
+                var opResult = fileStorageAdapter.DeleteFile(fileShareName, absolutePath);
                 return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
             }
             catch (StorageException e)

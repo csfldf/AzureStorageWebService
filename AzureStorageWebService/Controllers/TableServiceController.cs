@@ -53,12 +53,12 @@ namespace AzureStorageWebService.Controllers
 
         //回头改为HttpDelete
         [HttpDelete]
-        public HttpResponseMessage DeleteTable([FromBody]TableOperationParamsModel parameters)
+        public HttpResponseMessage DeleteTable(string accountName, string sasToken, string tableName)
         {
             try
             {
-                AzureTableStorageAdapter tableStorageAdapter= new AzureTableStorageAdapter(parameters.AccountName, AzureStorageWebServiceUtil.DecodeParamter(parameters.SasToken));
-                var opResult = tableStorageAdapter.DeleteTable(parameters.TableName);
+                AzureTableStorageAdapter tableStorageAdapter= new AzureTableStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
+                var opResult = tableStorageAdapter.DeleteTable(tableName);
                 return AzureStorageWebServiceUtil.ConstructHttpResponseUsingOperationResult(Request, opResult);
             }
             catch (StorageException e)
