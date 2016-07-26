@@ -218,6 +218,7 @@
     <Compile Include="ParamsModel\Table\TableOperationParamsModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseMessage\BoolResultOpResponse.cs" />
+    <Compile Include="ResponseMessage\Model\File\FileorDirectoryModel.cs" />
     <Compile Include="Utils\AzureFileStorageAdapter.cs" />
     <Compile Include="Utils\AzureQueueStorageAdapter.cs" />
     <Compile Include="Utils\AzureStorageWebServiceConstantValue.cs" />

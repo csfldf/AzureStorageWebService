@@ -55,7 +55,7 @@ namespace AzureStorageWebService.Controllers
             try
             {
                 AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileStorageAdapter.ListRootDirectoryInFileShare(fileShareName));
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileStorageAdapter.ListFilesAndDirectoriesInSpecificDirectory(fileShareName, absolutePath));
             }
             catch (OperationCanceledException e)
             {

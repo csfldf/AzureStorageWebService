@@ -4,6 +4,7 @@ using AzureStorageWebService.Exceptions;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.File;
+using AzureStorageWebService.ResponseMessage.Model.File;
 
 namespace AzureStorageWebService.Utils
 {
@@ -23,14 +24,14 @@ namespace AzureStorageWebService.Utils
             return cloudFileClient.ListShares();
         }
 
-        public IEnumerable<IListFileItem> ListRootDirectoryInFileShare(string fileShareName)
+        public IEnumerable<FileorDirectoryModel> ListRootDirectoryInFileShare(string fileShareName)
         {
             CloudFileShare cloudFileShare = cloudFileClient.GetShareReference(fileShareName);
             CloudFileDirectory root = cloudFileShare.GetRootDirectoryReference();
-            return root.ListFilesAndDirectories();
+            return TransFormIListFileItem(root.ListFilesAndDirectories());
         }
 
-        public IEnumerable<IListFileItem> ListFilesAndDirectoriesInSpecificDirectory(string fileShareName, string absolutePath)
+        public IEnumerable<FileorDirectoryModel> ListFilesAndDirectoriesInSpecificDirectory(string fileShareName, string absolutePath)
         {
             CloudFileShare cloudFileShare = cloudFileClient.GetShareReference(fileShareName);
             CloudFileDirectory currentDirectory = cloudFileShare.GetRootDirectoryReference();
@@ -46,7 +47,7 @@ namespace AzureStorageWebService.Utils
                     throw new OperationFailException(string.Format("No directory with path = {0}", absolutePath));
                 }
             }
-            return currentDirectory.ListFilesAndDirectories();
+            return TransFormIListFileItem(currentDirectory.ListFilesAndDirectories());
         }
 
         public Tuple<bool, string> DeleteFile(string fileShareName, string absolutePath)
@@ -164,6 +165,27 @@ namespace AzureStorageWebService.Utils
                 }
             }
             return Tuple.Create<bool, string>(true, string.Format("Create directory {0} in file share {1} successfully", absolutePath, fileShareName));
+        }
+
+        private IEnumerable<FileorDirectoryModel> TransFormIListFileItem(IEnumerable<IListFileItem> items)
+        {
+            List<FileorDirectoryModel> fileOrDirectories = new List<FileorDirectoryModel>();
+
+            foreach (IListFileItem item in items)
+            {
+                if (item is CloudFile)
+                {
+                    CloudFile targetFile = (CloudFile)item;
+                    fileOrDirectories.Add(new FileorDirectoryModel(targetFile.Name, targetFile.Properties.LastModified.Value.DateTime, false));
+                }
+                else if (item is CloudFileDirectory)
+                {
+                    CloudFileDirectory targetDirectory = (CloudFileDirectory)item;
+                    fileOrDirectories.Add(new FileorDirectoryModel(targetDirectory.Name, targetDirectory.Properties.LastModified.Value.DateTime, true));
+                }
+            }
+
+            return fileOrDirectories;
         }
     }
 }
