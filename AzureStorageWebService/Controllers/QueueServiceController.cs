@@ -6,6 +6,7 @@ using AzureStorageWebService.Utils;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
 using AzureStorageWebService.ParamsModel.Queue;
+using AzureStorageWebService.ResponseMessage;
 
 namespace AzureStorageWebService.Controllers
 {
@@ -26,7 +27,7 @@ namespace AzureStorageWebService.Controllers
                     queueNames.Add(queue.Name);
                 }
 
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, queueNames);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, new ResultWithDataResponse<List<string>>(true, queueNames));
             }
             catch (StorageException e)
             {
@@ -44,7 +45,8 @@ namespace AzureStorageWebService.Controllers
                 }
 
                 AzureQueueStorageAdapter queueStorageAdapter = new AzureQueueStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, queueStorageAdapter.GetMessages(queueName, messageCount));
+
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, new ResultWithDataResponse<IEnumerable<CloudQueueMessage>>(true, queueStorageAdapter.GetMessages(queueName, messageCount)));
             }
             catch (StorageException e)
             {

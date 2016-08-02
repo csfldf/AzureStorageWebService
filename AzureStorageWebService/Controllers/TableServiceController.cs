@@ -7,6 +7,7 @@ using AzureStorageWebService.Utils;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using AzureStorageWebService.ParamsModel.Table;
+using AzureStorageWebService.ResponseMessage;
 
 namespace AzureStorageWebService.Controllers
 {
@@ -27,7 +28,8 @@ namespace AzureStorageWebService.Controllers
                 {
                     tableNames.Add(table.Name);
                 }
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, tableNames);
+
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, new ResultWithDataResponse<List<String>>(true, tableNames));
             }
             catch (StorageException e)
             {

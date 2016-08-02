@@ -4,11 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using AzureStorageWebService.ParamsModel.File;
 using AzureStorageWebService.ResponseMessage;
+using AzureStorageWebService.ResponseMessage.Model.File;
 using AzureStorageWebService.Utils;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.File;
-using AzureStorageWebService.ParamsModel.File;
 
 namespace AzureStorageWebService.Controllers
 {
@@ -29,7 +30,7 @@ namespace AzureStorageWebService.Controllers
                     fileSharesNames.Add(fileShare.Name);
                 }
 
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileSharesNames);
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, new ResultWithDataResponse<List<string>>(true, fileSharesNames));
             }
             catch (StorageException e)
             {
@@ -42,7 +43,7 @@ namespace AzureStorageWebService.Controllers
             try
             {
                 AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileStorageAdapter.ListRootDirectoryInFileShare(fileShareName));
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, new ResultWithDataResponse<IEnumerable<FileorDirectoryModel>>(true, fileStorageAdapter.ListRootDirectoryInFileShare(fileShareName)));
             }
             catch (StorageException e)
             {
@@ -55,7 +56,8 @@ namespace AzureStorageWebService.Controllers
             try
             {
                 AzureFileStorageAdapter fileStorageAdapter = new AzureFileStorageAdapter(accountName, AzureStorageWebServiceUtil.DecodeParamter(sasToken));
-                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, fileStorageAdapter.ListFilesAndDirectoriesInSpecificDirectory(fileShareName, absolutePath));
+
+                return AzureStorageWebServiceUtil.ConstructHttpResponseUsingInstance(Request, new ResultWithDataResponse<IEnumerable<FileorDirectoryModel>>(true, fileStorageAdapter.ListFilesAndDirectoriesInSpecificDirectory(fileShareName, absolutePath)));
             }
             catch (OperationCanceledException e)
             {

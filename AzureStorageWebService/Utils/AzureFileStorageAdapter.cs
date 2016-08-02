@@ -176,12 +176,28 @@ namespace AzureStorageWebService.Utils
                 if (item is CloudFile)
                 {
                     CloudFile targetFile = (CloudFile)item;
-                    fileOrDirectories.Add(new FileorDirectoryModel(targetFile.Name, targetFile.Properties.LastModified.Value.DateTime, false));
+
+                    if (targetFile.Properties.LastModified == null)
+                    {
+                        fileOrDirectories.Add(new FileorDirectoryModel(targetFile.Name, null, true));
+                    }
+                    else
+                    {
+                        fileOrDirectories.Add(new FileorDirectoryModel(targetFile.Name, targetFile.Properties.LastModified.Value.DateTime, true));
+                    }
                 }
                 else if (item is CloudFileDirectory)
                 {
                     CloudFileDirectory targetDirectory = (CloudFileDirectory)item;
-                    fileOrDirectories.Add(new FileorDirectoryModel(targetDirectory.Name, targetDirectory.Properties.LastModified.Value.DateTime, true));
+
+                    if (targetDirectory.Properties.LastModified == null)
+                    {
+                        fileOrDirectories.Add(new FileorDirectoryModel(targetDirectory.Name, null, true));
+                    }
+                    else
+                    {
+                        fileOrDirectories.Add(new FileorDirectoryModel(targetDirectory.Name, targetDirectory.Properties.LastModified.Value.DateTime, true));
+                    }
                 }
             }
 

@@ -13,7 +13,7 @@ namespace AzureStorageWebService.ResponseMessage.Model.File
             set;
         }
 
-        public DateTime LastModifiedTime
+        public DateTime? LastModifiedTime
         {
             get;
             set;
@@ -25,7 +25,7 @@ namespace AzureStorageWebService.ResponseMessage.Model.File
             set;
         }
 
-        public FileorDirectoryModel(string name, DateTime lastModifiedTime, bool isDirectory)
+        public FileorDirectoryModel(string name, DateTime? lastModifiedTime, bool isDirectory)
         {
             Name = name;
             LastModifiedTime = lastModifiedTime;
